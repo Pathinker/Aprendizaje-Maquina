@@ -61,7 +61,7 @@ def graficarInformacion(datosEntrenamiento, datosPrediccion = None):
 
     erroresPrediccion /= len(datosEntrenamiento)
 
-    print("\nPendiente: {} \nCoordenada Origen (Y): {} \nCoeficiente de Correlación: {} \nError Cuádratico Medio (MSE): {}".format(m, b, coeficienteCorrelacion, erroresPrediccion))
+    print("\nPendiente: {} \nCoordenada Origen (Y): {} \nCoeficiente de Correlación: {} \nError Cuadrático Medio (MSE): {}".format(m, b, coeficienteCorrelacion, erroresPrediccion))
 
     plt.title("Entrenamiento del Modelo")
     plt.scatter(x, y, color = "Blue", label = "Datos")
@@ -89,7 +89,7 @@ def graficarInformacion(datosEntrenamiento, datosPrediccion = None):
 
         erroresPrediccion /= len(datosPrediccion)
 
-        print("Error Cuádratico Medio (MSE) con Datos no Conocidos: ", erroresPrediccion)
+        print("Error Cuadrático Medio (MSE) con Datos no Conocidos: ", erroresPrediccion)
     
         plt.title("Desempeño del Modelo con Datos No Conocidos")
         plt.scatter(x, y, color = "Blue", label = "Datos")
