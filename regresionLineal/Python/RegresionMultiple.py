@@ -1,10 +1,16 @@
+import io
+import sys
 import random
 import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Permitir la representación de acentos,
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 dataFrame = pd.read_csv(r"regresionLineal/Python/FuelConsumption.csv", 
                     delimiter=",")
@@ -25,9 +31,13 @@ plt.show()
 
 # Extraer las variables correlacionadas con la desceada a predecir.
 
-x1 = dataFrame["ENGINE SIZE"] # x
-x2 = dataFrame["FUEL CONSUMPTION"] # y
-x3 = dataFrame["COEMISSIONS "] # z
+x1Etiqueta = "ENGINE SIZE"
+x2Etiqueta = "FUEL CONSUMPTION"
+x3Etiqueta = "COEMISSIONS "
+
+x1 = dataFrame[x1Etiqueta] # x
+x2 = dataFrame[x2Etiqueta] # y
+x3 = dataFrame[x3Etiqueta] # z
 
 valoresIndependientes =  np.column_stack((x1, x2))
 
@@ -64,6 +74,7 @@ ax.set_zlabel("Emisiones Carbono")
 ax.azim = 60
 ax.elev = 10
 
+plt.title("Regresión Múltiple Lineal")
 plt.show()
 
 # Evaluación del modelo haciendo uso de Validación Cruzada 80% Entrenamiento 20% Evaluacion
@@ -81,24 +92,38 @@ for i in range(2):
 dataFrameEntrenamiento = pd.concat(validacionCruzada, ignore_index=True)
 dataFrameEvaluacion = pd.concat(dataFrameEvaluacion, ignore_index=True)
 
-x1 = dataFrameEntrenamiento["ENGINE SIZE"] # x
-x2 = dataFrameEntrenamiento["FUEL CONSUMPTION"] # y
-x3 = dataFrameEntrenamiento["COEMISSIONS "] # z
+# Desempaquetar nuevamente los datos de entrenamiento.
+
+x1 = dataFrameEntrenamiento[x1Etiqueta] # x
+x2 = dataFrameEntrenamiento[x2Etiqueta] # y
+x3 = dataFrameEntrenamiento[x3Etiqueta] # z
 
 valoresIndependientes =  np.column_stack((x1, x2))
 
 modeloValidacionCruzada = LinearRegression()
 modeloValidacionCruzada = modeloValidacionCruzada.fit(valoresIndependientes, x3)
 
-x1Prediccion = dataFrameEntrenamiento["ENGINE SIZE"] # x
-x2Prediccion = dataFrameEntrenamiento["FUEL CONSUMPTION"] # y
+# Desempaquetar los datos de evaluación.
+
+x1Prediccion = dataFrameEntrenamiento[x1Etiqueta] # x
+x2Prediccion = dataFrameEntrenamiento[x2Etiqueta] # y
 
 valoresPrediccion = np.column_stack((x1Prediccion, x2Prediccion))
 
-print("\n--- Entrenamiento 80% Evaluacion 20% Validación Cruzada ---\n\n" 
+x1Evaluacion = dataFrameEvaluacion[x1Etiqueta] # x
+x2Evaluacion= dataFrameEvaluacion[x2Etiqueta] # y
+x3Evaluacion = dataFrameEvaluacion[x3Etiqueta]
+
+valoresEvaluacion = np.column_stack((x1Evaluacion, x2Evaluacion))
+
+print("\n--- Entrenamiento 80% Evaluacion 20% Validacion Cruzada ---\n\n" 
       "Intercepto: {}\n"
       "Coeficientes: {}\n"
-      "Error Cuadratico Medio: {}".format(modeloValidacionCruzada.intercept_, modeloValidacionCruzada.coef_, mean_squared_error(x3, modeloValidacionCruzada.predict(valoresIndependientes))))
+      "Error Cuadratico Medio: {}\n"
+      "Precisión: {}".format(modeloValidacionCruzada.intercept_, 
+                             modeloValidacionCruzada.coef_, 
+                             mean_squared_error(x3, modeloValidacionCruzada.predict(valoresIndependientes)),
+                             r2_score(dataFrameEvaluacion[x3Etiqueta], modeloValidacionCruzada.predict(valoresEvaluacion))))
 
 # Graficar el plano resusltante.
 
@@ -107,9 +132,11 @@ ax = fig.add_subplot(projection = "3d")
 
 # Graficar los datos del dataset
 
-ax.scatter(valoresPrediccion[:, 0], valoresPrediccion[:, 1], x3, c = "blue", marker = "o")
+ax.scatter(valoresPrediccion[:, 0], valoresPrediccion[:, 1], x3, c = "blue", marker = "o", label = "Valores Entrenamiento")
 xx, yy = np.meshgrid(np.linspace(np.min(valoresPrediccion[:, 0]), np.max(valoresPrediccion[:, 0]), 100),
                      np.linspace(np.min(valoresPrediccion[:, 1]), np.max(valoresPrediccion[:, 1]), 100))
+
+ax.scatter(valoresEvaluacion[:, 0], valoresEvaluacion[:, 1], x3Evaluacion, c = "green", marker = "o", label = "Valores Evaluación")
 
 # Ecuación de la regresión lineal múltiple donde el plano obtenido, es una extensión de la ecuación de una recta convencional
 # Donde son incorporados todas las pendientes que multiplicaran al dato proporcionado más un sesgo.
@@ -123,4 +150,6 @@ ax.set_zlabel("Emisiones Carbono")
 ax.azim = 60
 ax.elev = 10
 
+plt.title("Regresión Múltiple Lineal: Validación Cruzada")
+plt.legend()
 plt.show()
