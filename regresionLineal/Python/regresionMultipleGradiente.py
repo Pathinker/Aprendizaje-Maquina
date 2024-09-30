@@ -103,7 +103,9 @@ for i in range(kfolder):
 
     print("Error Cuadrático Medio {}\n".format( mse))
 
-print("\n--- Resultados Finales ---- \n\nDesempeño Modelo: {}\nError Medio {}".format(sum(presicionModelo) / len(presicionModelo), sum(mseResultados) / len(mseResultados)))
+print("\n--- Resultados Finales ---- \n\nCoeficientes: {}\nIntercepto: {}\nDesempeño Modelo: {}\nError Medio {}".format(modelo.coef_, modelo.intercept_,
+                                                                                                        sum(presicionModelo) / len(presicionModelo),
+                                                                                                        sum(mseResultados) / len(mseResultados)))
 
 # Graficar Rendimiento y Error Modelo por Folder
 
