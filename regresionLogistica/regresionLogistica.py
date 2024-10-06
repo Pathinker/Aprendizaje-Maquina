@@ -1,17 +1,24 @@
+import io
+import sys
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import datasets
 from sklearn.metrics import confusion_matrix
 
+# Permitir la representación de acentos, porque uso otro metodo de encoding en el archivo CSV
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 class regresionLogistica:
 
-    def __init__(self, learningRate=0.01, epochs=1000):
+    def __init__(self, learningRate = 0.01, epochs = 1000, classWeight = None):
         self.learningRate = learningRate
         self.epochs = epochs
         self.weights = None
         self.bias = None
         self.losses = []
+        self.classWeight = classWeight
 
     def sigmoid(self, z): # Función lógistica o sigmoideal para clasificación binaria
         return 1 / (1 + np.exp(-z))
@@ -38,9 +45,11 @@ class regresionLogistica:
             loss = self.loss(y_predicted, y)
             self.losses.append(loss)
 
+            classDistribution = np.array([self.classWeight[int(label)] if self.classWeight else 1 for label in y])
+
             # Calcular gradientes
-            dw = (1 / num_samples) * np.dot(X.T, (y_predicted - y))
-            db = (1 / num_samples) * np.sum(y_predicted - y)
+            dw = (1 / num_samples) * np.dot(X.T, (y_predicted - y) * classDistribution)
+            db = (1 / num_samples) * np.sum((y_predicted - y) * classDistribution)
 
             # Actualizar los parámetros
             self.weights -= self.learningRate * dw
@@ -103,16 +112,26 @@ xTest = np.array(xTest)
 yTrain = np.array(yTrain)
 yTest = np.array(yTest)
 
+# Los datos de entrenamiento son suceptibles de presentar una distribución desigual, por ende se le es asociado mayor peso a las clases con menos ejemplos.
+
+classWeights = {}
+numeroTotalEjemplos = yTrain.shape[0]
+unique, counts = np.unique(yTrain, return_counts=True)
+
+for clase, count in zip(unique, counts):
+
+    classWeights[int(clase)] = numeroTotalEjemplos / count
+
 # Crear y entrenar el modelo
 
-model = regresionLogistica(learningRate=0.01, epochs=1000)
+model = regresionLogistica(learningRate=0.01, epochs=1000, classWeight = classWeights)
 model.fit(xTrain, yTrain)
 
 # Hacer predicciones en el conjunto de prueba
-Predicciones = model.predict(xTest)
+predicciones = model.predict(xTest)
 
 # Calcular la matriz de confusión
-cm = confusion_matrix(yTest, Predicciones)
+cm = confusion_matrix(yTest, predicciones)
 
 # Visualizar la matriz de confusión
 plt.figure(figsize=(8, 6))
@@ -125,4 +144,22 @@ plt.xlabel('Etiqueta Predicha')
 plt.ylabel('Etiqueta Verdadera')
 plt.show()
 
-print(np.array(cm))
+matrizConfusion = np.array(cm)
+
+verdaderoPositivo = matrizConfusion[0][0]
+falsoPositivo = matrizConfusion[0][1]
+falsoNegativo = matrizConfusion[1][0]
+verdaderoNegativo = matrizConfusion[1][1]
+
+exactitud = (verdaderoPositivo + verdaderoNegativo) / np.sum(matrizConfusion)
+exhaustividad = verdaderoPositivo / (verdaderoPositivo + falsoNegativo)
+presicion = verdaderoPositivo / (verdaderoPositivo + falsoPositivo)
+
+print("--- Resultados Matriz Confusión ---\n\n"
+     "Verdadero Positivo: {}"
+     "\nFalso Positivo: {}"
+     "\nFalso Negativo: {}"
+     "\nFalso Positivo: {}"
+     "\n\nExactitud: {}"
+     "\nExhaustividad: {}"
+     "\nPrecisión: {}".format(verdaderoPositivo, falsoPositivo, falsoNegativo, verdaderoNegativo, exactitud, exhaustividad, presicion))
