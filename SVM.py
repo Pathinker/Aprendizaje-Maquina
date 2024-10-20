@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns # type: ignore
 from sklearn import datasets # type: ignore
-from sklearn.metrics import confusion_matrix # type: ignore
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score # type: ignore
 from sklearn.svm import SVC # type: ignore
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score # type: ignore
 from sklearn.decomposition import PCA # type: ignore
@@ -39,6 +39,21 @@ kFold = cross_val_score(mejorSVM, atributos, objetivo, cv=10)
 print(f"Resultados de validación cruzada (k=10): {kFold.tolist()}")
 print(f"Precisión promedio de validación cruzada: {np.mean(kFold)}")
 
+# Calcular la matriz de confusión
+matrizConfusionSVM = confusion_matrix(yTest, predicciones)
+
+# Calcular precisión, recall y accuracy
+precision = precision_score(yTest, predicciones, average='weighted')
+recall = recall_score(yTest, predicciones, average='weighted')
+accuracy = accuracy_score(yTest, predicciones)
+
+# Mostrar los resultados
+
+print("\nMatriz Confusión\n")
+print(f"Precisión: {precision}")
+print(f"Recall: {recall}")
+print(f"Accuracy: {accuracy}")
+
 # Mapa de calor para la matriz de confusión
 def matrizConfusion(matriz, nombres):
     plt.figure(figsize=(8, 6))
@@ -47,7 +62,7 @@ def matrizConfusion(matriz, nombres):
     plt.show()
 
 # Llamada a la función para graficar la matriz de confusión
-matrizConfusion(confusion_matrix(yTest, predicciones), nombreClases)
+matrizConfusion(matrizConfusionSVM, nombreClases)
 
 # Reducir dimensionalidades usando PCA para visualizar la división lineal del SVM
 pca = PCA(n_components=2)
