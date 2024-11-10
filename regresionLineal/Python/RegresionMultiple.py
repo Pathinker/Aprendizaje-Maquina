@@ -2,11 +2,11 @@ import io
 import sys
 import random
 import pandas as pd
-import seaborn as sns
+import seaborn as sns # type: ignore
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.linear_model import LinearRegression # type: ignore
+from sklearn.metrics import mean_squared_error, r2_score # type: ignore
 
 # Permitir la representación de acentos,
 
