@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 imagen = cv2.imread('SOM/Perro.jpg')
 imagenRGB = cv2.cvtColor(cv2.imread('SOM/Perro.jpg'), cv2.COLOR_BGR2RGB)
@@ -40,14 +41,14 @@ def updateWeights(inputVector, weights, bmuIndex, t, maxIter, initLearningRate =
 
                 weights[i, j] += learningRate * influence * (inputVector - weights[i, j])
 
-iteraciones = 1000
+iteraciones = 10000
 
-for i in range(iteraciones):
+for i in tqdm(range(iteraciones), desc="Entrenamiento SOM", unit = "Iteracion", dynamic_ncols=True):
 
     inputVector = data[np.random.randint(0, data.shape[0]), np.random.randint(0, data.shape[1]), :]
     
     bmuIndex = findBMU(inputVector, weights)
-    updateWeights(inputVector, weights, bmuIndex, i, iteraciones, 0.5)
+    updateWeights(inputVector, weights, bmuIndex, i, iteraciones, initLearningRate = 0.1)
 
 fig, ax = plt.subplots(figsize=(8, 8))
 
@@ -56,7 +57,7 @@ for i in range(somX):
     for j in range(somY):
 
         weight = weights[i, j]
-        ax.add_patch(plt.Rectangle((i, j), 1, 1, color=weight, edgecolor='k'))
+        ax.add_patch(plt.Rectangle((i, j), 1, 1, facecolor=weight))
 
 ax.set_xlim([0, somX])
 ax.set_ylim([0, somY])
